@@ -31,7 +31,7 @@ def GPT_response(text):
         app.logger.info(f"Sending request to Anything LLM with prompt: {text}")
         
         # Send the prompt to Anything LLM via the ngrok-exposed API URL
-        response = requests.post(ANYTHING_LLM_API_URL, json={"prompt": text}, timeout=10)
+        response = requests.post(f"https://9d98-111-248-95-219.ngrok-free.app/v1/completions", json={"prompt": text}, timeout=10)
         
         # Log the raw response
         app.logger.info(f"Received raw response from Anything LLM: {response.text}")
