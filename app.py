@@ -27,14 +27,33 @@ ANYTHING_LLM_API_URL = "https://a1e4-111-248-95-219.ngrok-free.app/generate"
 
 def GPT_response(text):
     try:
+        # Log the request to Anything LLM
+        app.logger.info(f"Sending request to Anything LLM with prompt: {text}")
+        
         # Send the prompt to Anything LLM via the ngrok-exposed API URL
-        response = requests.post(ANYTHING_LLM_API_URL, json={"prompt": text})
+        response = requests.post(ANYTHING_LLM_API_URL, json={"prompt": text}, timeout=10)
+        
+        # Log the raw response
+        app.logger.info(f"Received raw response from Anything LLM: {response.text}")
+        
+        # Raise an error if the response status code is not successful (not 2xx)
         response.raise_for_status()
+        
+        # Process the JSON response
         result = response.json()
         answer = result.get('text', '').replace('。', '')
         return answer
+    
+    except requests.exceptions.RequestException as e:
+        app.logger.error(f"Request to Anything LLM failed: {e}")
+        return "Error in processing your request."
+    
+    except ValueError as e:
+        app.logger.error(f"Invalid JSON received from Anything LLM: {e}")
+        return "Error in processing your request."
+    
     except Exception as e:
-        app.logger.error(f"Error during GPT response: {e}")
+        app.logger.error(f"Unexpected error: {e}")
         return "Error in processing your request."
 
 @app.route("/callback", methods=['POST'])
