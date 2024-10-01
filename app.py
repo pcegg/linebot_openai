@@ -1,17 +1,26 @@
-from flask import Flask, request, abort, jsonify
+import os
+from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
-from linebot.models import *
-import os
+from linebot.models import MessageEvent, TextMessage, TextSendMessage
 import requests
 import traceback
 
 app = Flask(__name__)
 
-# Channel Access Token
-line_bot_api = LineBotApi(os.getenv('CHANNEL_ACCESS_TOKEN'))
-# Channel Secret
-handler = WebhookHandler(os.getenv('CHANNEL_SECRET'))
+# Retrieve environment variables
+channel_access_token = os.getenv('CHANNEL_ACCESS_TOKEN')
+channel_secret = os.getenv('CHANNEL_SECRET')
+
+# Check if the environment variables are set properly
+if not channel_access_token:
+    raise ValueError("Missing CHANNEL_ACCESS_TOKEN environment variable.")
+if not channel_secret:
+    raise ValueError("Missing CHANNEL_SECRET environment variable.")
+
+# Initialize the LineBotApi and WebhookHandler with the environment variables
+line_bot_api = LineBotApi(channel_access_token)
+handler = WebhookHandler(channel_secret)
 
 # URL of your Anything LLM service exposed via ngrok
 ANYTHING_LLM_API_URL = "https://a1e4-111-248-95-219.ngrok-free.app/generate"
