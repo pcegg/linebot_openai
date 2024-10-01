@@ -23,7 +23,7 @@ line_bot_api = LineBotApi(channel_access_token)
 handler = WebhookHandler(channel_secret)
 
 # URL of your Anything LLM service exposed via ngrok
-ANYTHING_LLM_API_URL = "https://a1e4-111-248-95-219.ngrok-free.app/generate"
+ANYTHING_LLM_API_URL = "https://e8c2-111-248-95-219.ngrok-free.app/generate"
 
 def GPT_response(text):
     try:
