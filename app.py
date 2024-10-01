@@ -2,7 +2,7 @@ from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import *
-import tempfile, os, datetime, anythinglm, time, traceback
+import tempfile, os, datetime, anythingllm, time, traceback
 
 app = Flask(__name__)
 static_tmp_path = os.path.join(os.path.dirname(__file__), 'static', 'tmp')
@@ -12,15 +12,15 @@ line_bot_api = LineBotApi(os.getenv('CHANNEL_ACCESS_TOKEN'))
 # Channel Secret
 handler = WebhookHandler(os.getenv('CHANNEL_SECRET'))
 
-# ANYTHINGLM API Key initialization with error check
+# ANYTHINGLLM API Key initialization with error check
 api_key = os.getenv('ANYTHINGLM_API_KEY')
 if not api_key:
-    raise ValueError("Missing ANYTHINGLM_API_KEY environment variable.")
-anythinglm.api_key = api_key
+    raise ValueError("Missing ANYTHINGLLM_API_KEY environment variable.")
+anythingllm.api_key = api_key
 
 def GPT_response(text):
     try:
-        response = anythinglm.Completion.create(model="Breeze Instruct 64K v01 7b Q2_k gguf", prompt=text, temperature=0.5, max_tokens=500)
+        response = anythingllm.Completion.create(model="Breeze Instruct 64K v01 7b Q2_k gguf", prompt=text, temperature=0.5, max_tokens=500)
         answer = response['choices'][0]['text'].replace('。', '')
         return answer
     except Exception as e:
