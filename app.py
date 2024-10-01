@@ -23,7 +23,7 @@ line_bot_api = LineBotApi(channel_access_token)
 handler = WebhookHandler(channel_secret)
 
 # URL of your Anything LLM service exposed via ngrok
-ANYTHING_LLM_API_URL = "https://9d98-111-248-95-219.ngrok-free.app"
+ANYTHING_LLM_API_URL = "https://9d98-111-248-95-219.ngrok-free.app/v1/completions"
 
 def GPT_response(text):
     try:
@@ -97,5 +97,5 @@ def welcome(event):
     line_bot_api.reply_message(event.reply_token, message)
 
 if __name__ == "__main__":
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 4040))
     app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
