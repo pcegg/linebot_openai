@@ -1,27 +1,28 @@
-from flask import Flask, request, abort
+from flask import Flask, request, abort, jsonify
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import *
-import tempfile, os, datetime, anythingllm, time, traceback
+import os
+import requests
+import traceback
 
 app = Flask(__name__)
-static_tmp_path = os.path.join(os.path.dirname(__file__), 'static', 'tmp')
 
 # Channel Access Token
 line_bot_api = LineBotApi(os.getenv('CHANNEL_ACCESS_TOKEN'))
 # Channel Secret
 handler = WebhookHandler(os.getenv('CHANNEL_SECRET'))
 
-# ANYTHINGLLM API Key initialization with error check
-api_key = os.getenv('ANYTHINGLM_API_KEY')
-if not api_key:
-    raise ValueError("Missing ANYTHINGLLM_API_KEY environment variable.")
-anythingllm.api_key = api_key
+# URL of your Anything LLM service exposed via ngrok
+ANYTHING_LLM_API_URL = "https://a1e4-111-248-95-219.ngrok-free.app/generate"
 
 def GPT_response(text):
     try:
-        response = anythingllm.Completion.create(model="Breeze Instruct 64K v01 7b Q2_k gguf", prompt=text, temperature=0.5, max_tokens=500)
-        answer = response['choices'][0]['text'].replace('。', '')
+        # Send the prompt to Anything LLM via the ngrok-exposed API URL
+        response = requests.post(ANYTHING_LLM_API_URL, json={"prompt": text})
+        response.raise_for_status()
+        result = response.json()
+        answer = result.get('text', '').replace('。', '')
         return answer
     except Exception as e:
         app.logger.error(f"Error during GPT response: {e}")
@@ -29,9 +30,13 @@ def GPT_response(text):
 
 @app.route("/callback", methods=['POST'])
 def callback():
+    # Get X-Line-Signature header value
     signature = request.headers['X-Line-Signature']
+    # Get request body as text
     body = request.get_data(as_text=True)
-    app.logger.info("Request body: " + body)
+    app.logger.info(f"Request body: {body}")
+
+    # Handle webhook body
     try:
         handler.handle(body, signature)
     except InvalidSignatureError as e:
@@ -43,6 +48,7 @@ def callback():
 def handle_message(event):
     msg = event.message.text
     try:
+        # Get GPT response from Anything LLM
         GPT_answer = GPT_response(msg)
         line_bot_api.reply_message(event.reply_token, TextSendMessage(GPT_answer))
     except Exception as e:
