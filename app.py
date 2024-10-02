@@ -43,8 +43,13 @@ def GPT_response(text):
         result = response.json()
         
         # Extract the text from the response and clean it up
-        answer = result['choices'][0]['text'].replace('。', '') if 'choices' in result else "No valid response"
-        
+        if 'choices' in result and len(result['choices']) > 0:
+            answer = result['choices'][0]['text'].replace('。', '')
+            app.logger.info(f"Extracted answer: {answer}")
+        else:
+            app.logger.error("No valid response received from Anything LLM")
+            return "No valid response from LLM."
+
         return answer
     
     except requests.exceptions.RequestException as e:
