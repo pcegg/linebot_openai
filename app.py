@@ -31,7 +31,7 @@ def GPT_response(text):
         app.logger.info(f"Sending request to Anything LLM with prompt: {text}")
         
         # Send the prompt to Anything LLM via the ngrok-exposed API URL
-        response = requests.post(ANYTHING_LLM_API_URL, json={"prompt": text, "model": "default_model", "temperature": 0.7, "max_tokens": 4096}, timeout=10)
+        response = requests.post(ANYTHING_LLM_API_URL, json={"prompt": text, "model": "default_model", "temperature": 0.7, "max_tokens": 500}, timeout=30)
         
         # Log the raw response
         app.logger.info(f"Received raw response from Anything LLM: {response.text}")
@@ -42,6 +42,50 @@ def GPT_response(text):
         # Process the JSON response
         result = response.json()
         app.logger.info(f"Parsed result: {result}")
+        def GPT_response(text):
+    try:
+        # Log the request to Anything LLM
+        app.logger.info(f"Sending request to Anything LLM with prompt: {text}")
+        
+        # Send the prompt to Anything LLM via the ngrok-exposed API URL
+        response = requests.post(
+            ANYTHING_LLM_API_URL, 
+            json={
+                "prompt": text, 
+                "model": "default_model", 
+                "temperature": 0.7,
+                "max_tokens": 500  # 限制生成的最大 token 數
+            },
+            timeout=30  # 延長超時時間
+        )
+        
+        # Log the raw response
+        app.logger.info(f"Received raw response from Anything LLM: {response.text}")
+        
+        # Raise an error if the response status code is not successful (not 2xx)
+        response.raise_for_status()
+        
+        # Process the JSON response
+        result = response.json()
+        answer = result.get('choices', [{}])[0].get('text', '').replace('。', '')
+        
+        # 確保回應的長度不超過 LINE 訊息的限制 (5000 個字元)
+        if len(answer) > 5000:
+            answer = answer[:5000]  # 截斷回應
+        
+        return answer
+    
+    except requests.exceptions.RequestException as e:
+        app.logger.error(f"Request to Anything LLM failed: {e}")
+        return "Error in processing your request."
+    
+    except ValueError as e:
+        app.logger.error(f"Invalid JSON received from Anything LLM: {e}")
+        return "Error in processing your request."
+    
+    except Exception as e:
+        app.logger.error(f"Unexpected error: {e}")
+        return "Error in processing your request."
         
         # Extract the text from the response
         if 'choices' in result and len(result['choices']) > 0:
