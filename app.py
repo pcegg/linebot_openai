@@ -31,7 +31,7 @@ def GPT_response(text):
         app.logger.info(f"Sending request to Anything LLM with prompt: {text}")
         
         # Send the prompt to Anything LLM via the ngrok-exposed API URL
-        response = requests.post(f"https://104a-111-248-75-161.ngrok-free.app/v1/completions", json={"prompt": text}, timeout=10)
+        response = requests.post(ANYTHING_LLM_API_URL, json={"prompt": text, "model": "default_model", "temperature": 0.7}, timeout=10)
         
         # Log the raw response
         app.logger.info(f"Received raw response from Anything LLM: {response.text}")
@@ -41,7 +41,10 @@ def GPT_response(text):
         
         # Process the JSON response
         result = response.json()
-        answer = result.get('text', '').replace('。', '')
+        
+        # Extract the text from the response and clean it up
+        answer = result['choices'][0]['text'].replace('。', '') if 'choices' in result else "No valid response"
+        
         return answer
     
     except requests.exceptions.RequestException as e:
@@ -78,6 +81,7 @@ def handle_message(event):
     try:
         # Get GPT response from Anything LLM
         GPT_answer = GPT_response(msg)
+        # Send the generated response back to the user
         line_bot_api.reply_message(event.reply_token, TextSendMessage(GPT_answer))
     except Exception as e:
         app.logger.error(f"Failed to send message: {e}")
