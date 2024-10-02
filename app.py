@@ -31,7 +31,7 @@ def GPT_response(text):
         app.logger.info(f"Sending request to Anything LLM with prompt: {text}")
         
         # Send the prompt to Anything LLM via the ngrok-exposed API URL
-        response = requests.post(ANYTHING_LLM_API_URL, json={"prompt": text, "model": "default_model", "temperature": 0.7}, timeout=10)
+        response = requests.post(ANYTHING_LLM_API_URL, json={"prompt": text, "model": "default_model", "temperature": 0.7, "max_tokens": 4096}, timeout=10)
         
         # Log the raw response
         app.logger.info(f"Received raw response from Anything LLM: {response.text}")
@@ -41,13 +41,11 @@ def GPT_response(text):
         
         # Process the JSON response
         result = response.json()
-        
-        # Log the parsed result
-        app.logger.info(f"Parsed JSON result: {result}")
+        app.logger.info(f"Parsed result: {result}")
         
         # Extract the text from the response
         if 'choices' in result and len(result['choices']) > 0:
-            answer = result['choices'][0]['text'].replace('。', '')
+            answer = result['choices'][0]['text'].strip()  # 移除空格和換行
             app.logger.info(f"Extracted answer: {answer}")
             return answer
         else:
