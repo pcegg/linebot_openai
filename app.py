@@ -31,23 +31,6 @@ def GPT_response(text):
         app.logger.info(f"Sending request to Anything LLM with prompt: {text}")
         
         # Send the prompt to Anything LLM via the ngrok-exposed API URL
-        response = requests.post(ANYTHING_LLM_API_URL, json={"prompt": text, "model": "default_model", "temperature": 0.7, "max_tokens": 500}, timeout=30)
-        
-        # Log the raw response
-        app.logger.info(f"Received raw response from Anything LLM: {response.text}")
-        
-        # Raise an error if the response status code is not successful (not 2xx)
-        response.raise_for_status()
-        
-        # Process the JSON response
-        result = response.json()
-        app.logger.info(f"Parsed result: {result}")
-        def GPT_response(text):
-    try:
-        # Log the request to Anything LLM
-        app.logger.info(f"Sending request to Anything LLM with prompt: {text}")
-        
-        # Send the prompt to Anything LLM via the ngrok-exposed API URL
         response = requests.post(
             ANYTHING_LLM_API_URL, 
             json={
@@ -74,27 +57,6 @@ def GPT_response(text):
             answer = answer[:5000]  # 截斷回應
         
         return answer
-    
-    except requests.exceptions.RequestException as e:
-        app.logger.error(f"Request to Anything LLM failed: {e}")
-        return "Error in processing your request."
-    
-    except ValueError as e:
-        app.logger.error(f"Invalid JSON received from Anything LLM: {e}")
-        return "Error in processing your request."
-    
-    except Exception as e:
-        app.logger.error(f"Unexpected error: {e}")
-        return "Error in processing your request."
-        
-        # Extract the text from the response
-        if 'choices' in result and len(result['choices']) > 0:
-            answer = result['choices'][0]['text'].strip()  # 移除空格和換行
-            app.logger.info(f"Extracted answer: {answer}")
-            return answer
-        else:
-            app.logger.error("No valid 'choices' or 'text' in the response.")
-            return "No valid response from LLM."
     
     except requests.exceptions.RequestException as e:
         app.logger.error(f"Request to Anything LLM failed: {e}")
