@@ -42,15 +42,17 @@ def GPT_response(text):
         # Process the JSON response
         result = response.json()
         
-        # Extract the text from the response and clean it up
+        # Log the parsed result
+        app.logger.info(f"Parsed JSON result: {result}")
+        
+        # Extract the text from the response
         if 'choices' in result and len(result['choices']) > 0:
             answer = result['choices'][0]['text'].replace('。', '')
             app.logger.info(f"Extracted answer: {answer}")
+            return answer
         else:
-            app.logger.error("No valid response received from Anything LLM")
+            app.logger.error("No valid 'choices' or 'text' in the response.")
             return "No valid response from LLM."
-
-        return answer
     
     except requests.exceptions.RequestException as e:
         app.logger.error(f"Request to Anything LLM failed: {e}")
